@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>青汐</title>
+<!--
+  青汐 · 蝴蝶相框的网页问候
+  「君のことが、好きだ。」——藏在源码里的第二句话
+-->
+<link rel="preconnect" href="https://miaoda.feishu.cn">
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Serif+SC:wght@400;600;700&family=Great+Vibes&family=Alex+Brush&display=swap">
+<style>
+  :root{
+    --ink:#33443a;
+    --ink-soft:#5a6b5e;
+    --paper:#f7f3e8;
+    --paper-warm:#fbf8ef;
+    --gold:#b89968;
+    --sage:#6f8874;
+    --line:rgba(184,153,104,.35);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:"Noto Serif SC","Songti SC",Georgia,serif;
+    color:var(--ink);
+    background:#2e3d33;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.8;
+  }
+  /* 胶片颗粒 */
+  body::after{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:9999;
+    opacity:.06;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  }
+  .script{font-family:"Great Vibes",cursive}
+
+  /* ===== 全屏照片段 ===== */
+  .panel{
+    position:relative;min-height:100vh;min-height:100svh;
+    display:flex;align-items:center;justify-content:center;
+    padding:64px 24px;overflow:hidden;
+  }
+  .panel .bg{
+    position:absolute;inset:-10% 0;background-size:cover;background-position:center;
+    z-index:0;will-change:transform;
+  }
+  .scrim{position:absolute;inset:0;pointer-events:none;z-index:1}
+
+  /* 纸质卡片 */
+  .card{
+    position:relative;z-index:2;max-width:600px;width:100%;
+    background:rgba(250,247,238,.86);
+    border:1px solid var(--line);
+    border-radius:4px;
+    box-shadow:0 24px 70px rgba(30,45,35,.30);
+    padding:54px 46px;text-align:center;
+    backdrop-filter:blur(4px);
+  }
+
+  /* ===== 首屏 ===== */
+  .hero .bg{background-image:url("assets/hero.webp")}
+  .hero .scrim{
+    background:radial-gradient(ellipse at center, rgba(247,243,232,.55) 0%, rgba(247,243,232,.18) 45%, rgba(40,58,46,.25) 100%);
+  }
+  .eyebrow{
+    font-family:"Great Vibes",cursive;
+    font-size:26px;color:var(--gold);letter-spacing:1px;margin-bottom:6px;
+  }
+  .title{
+    font-size:52px;font-weight:700;letter-spacing:.55em;text-indent:.55em;
+    margin:6px 0 26px;color:var(--ink);
+  }
+  .poem{
+    font-size:17px;letter-spacing:2px;line-height:2.3;color:var(--ink-soft);
+  }
+  .flying-bf{
+    position:absolute;z-index:3;width:84px;left:50%;top:19%;
+    margin-left:-42px;pointer-events:none;
+    filter:drop-shadow(0 8px 12px rgba(30,45,35,.28));
+    opacity:0;
+  }
+  .flying-bf img{width:100%;display:block;transform-origin:center;
+    animation:bf-flap .65s ease-in-out infinite;}
+  @keyframes bf-flap{
+    0%,100%{transform:scaleX(1) rotate(0deg);}
+    50%{transform:scaleX(.88) rotate(-2deg);}
+  }
+
+  /* 播放钮 */
+  .playbtn{
+    margin:34px auto 0;width:64px;height:64px;border-radius:50%;
+    border:1px solid var(--gold);background:rgba(255,255,255,.4);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;
+    transition:transform .3s ease, box-shadow .3s ease;
+  }
+  .playbtn:hover{box-shadow:0 0 0 8px rgba(184,153,104,.12)}
+  .playbtn:active{transform:scale(.94)}
+  .playbtn svg{width:24px;height:24px;fill:var(--sage);display:block}
+  .playbtn svg.pause{display:none}
+  body.playing .playbtn svg.play{display:none}
+  body.playing .playbtn svg.pause{display:block}
+  .play-label{margin-top:12px;font-size:12px;letter-spacing:4px;color:var(--ink-soft)}
+  .scroll-hint{
+    position:absolute;left:50%;bottom:26px;transform:translateX(-50%);
+    z-index:2;color:rgba(255,255,255,.85);font-size:11px;letter-spacing:3px;
+    writing-mode:vertical-rl;opacity:.8;
+  }
+  .scroll-hint::after{
+    content:"";display:block;width:1px;height:38px;margin:8px auto 0;
+    background:linear-gradient(rgba(255,255,255,.8),transparent);
+  }
+
+  /* ===== 信笺段 ===== */
+  .letter .bg{background-image:url("assets/letter.webp")}
+  .letter .scrim{
+    background:linear-gradient(180deg, rgba(46,61,51,.25) 0%, rgba(46,61,51,.08) 35%, rgba(46,61,51,.30) 100%);
+  }
+  .letter h2{
+    font-size:30px;letter-spacing:8px;text-indent:8px;margin:4px 0 28px;color:var(--ink);
+  }
+  .letter p{
+    font-size:15.5px;line-height:2.2;color:var(--ink);text-align:left;
+    margin-bottom:16px;letter-spacing:1px;
+  }
+  .letter p.quiet{color:var(--ink-soft);font-size:14px;margin-top:24px}
+
+  /* ===== 音乐段 ===== */
+  .music .bg{background-image:url("assets/music.webp")}
+  .music .scrim{
+    background:linear-gradient(180deg, rgba(28,42,33,.55) 0%, rgba(28,42,33,.40) 50%, rgba(22,34,26,.72) 100%);
+  }
+  .music-inner{position:relative;z-index:2;text-align:center;color:#f2ecdc;max-width:560px}
+  .divider{width:180px;margin:0 auto 18px;opacity:.7}
+  .m-title{
+    font-family:"Great Vibes",cursive;font-size:54px;line-height:1.1;
+    color:#f6efdd;text-shadow:0 2px 18px rgba(0,0,0,.35);
+  }
+  .m-sub{margin-top:10px;font-size:13px;letter-spacing:3px;color:rgba(242,236,220,.85)}
+
+  /* 胶片唱片 */
+  .reel{
+    width:230px;height:230px;margin:36px auto 18px;cursor:pointer;
+    animation:spin 14s linear infinite;animation-play-state:paused;
+    transition:transform .3s;
+  }
+  body.playing .reel{animation-play-state:running}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .reel .disc{fill:#1f2d24;stroke:rgba(242,236,220,.25);stroke-width:1}
+  .reel .teeth{fill:rgba(242,236,220,.5)}
+  .reel .label{fill:#f2ecdc}
+  .reel .labeltxt{fill:#3a4c40;font-family:"Great Vibes",cursive}
+  .reel .hole{fill:#1f2d24}
+  .m-status{font-size:12px;letter-spacing:3px;color:rgba(242,236,220,.8)}
+  .m-status b{font-weight:400;color:#e9d8a8}
+
+  /* ===== 页脚与暗号 ===== */
+  footer{
+    background:var(--paper-warm);text-align:center;
+    padding:64px 24px 40px;
+  }
+  .f-line{font-size:13px;letter-spacing:4px;color:var(--ink-soft)}
+  .f-easter{
+    margin-top:18px;font-family:"Great Vibes",cursive;font-size:15px;
+    color:#e6dfc8; /* 几乎贴近纸张底色的暗号 */
+  }
+
+  /* 滚动显现 */
+  .reveal{opacity:0;transform:translateY(24px);transition:opacity .9s ease, transform .9s ease}
+  .reveal.in{opacity:1;transform:none}
+  @media (prefers-reduced-motion:reduce){
+    .reveal{opacity:1;transform:none;transition:none}
+    .reel{animation:none}
+    .flying-bf{opacity:.92;transform:none}
+    .flying-bf img{animation:none}
+  }
+
+  @media (max-width:480px){
+    .panel{padding:48px 18px}
+    .card{padding:42px 26px}
+    .title{font-size:42px;letter-spacing:.4em;text-indent:.4em}
+    .m-title{font-size:44px}
+    .reel{width:200px;height:200px}
+    .flying-bf{width:58px;margin-left:-29px;top:15%}
+  }
+</style>
+</head>
+<body>
+
+  <!-- ===== 首屏：青汐 ===== -->
+  <section class="panel hero">
+    <div class="bg"></div>
+    <div class="scrim"></div>
+    <div class="flying-bf"><img src="assets/butterfly.webp" alt=""></div>
+    <div class="card reveal">
+      <div class="eyebrow">à toi</div>
+      <h1 class="title">青汐</h1>
+      <p class="poem">
+        愿你如蝶，轻盈且自由。<br>
+        愿这抹绿意，温柔你四季。
+      </p>
+      <div class="playbtn" id="toggleBtn" role="button" aria-label="播放或暂停">
+        <svg class="play" viewBox="0 0 24 24"><path d="M8 5v14l10-7z"/></svg>
+        <svg class="pause" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+      </div>
+      <p class="play-label">轻 触 · 聆 听</p>
+    </div>
+    <div class="scroll-hint">轻轻下滑</div>
+  </section>
+
+  <!-- ===== 信笺：致你 ===== -->
+  <section class="panel letter">
+    <div class="bg"></div>
+    <div class="scrim"></div>
+    <div class="card reveal">
+      <div class="eyebrow">à toi</div>
+      <h2>致 你</h2>
+      <p>有些话，不必大声说。</p>
+      <p>比如清晨的第一缕光，<br>比如这只停在相框里的蝴蝶，<br>比如这一页——轻轻一碰，就有旋律。</p>
+      <p>愿你如蝶，轻盈且自由；<br>愿这抹绿意，温柔你四季。</p>
+      <p class="quiet">有人说，最温柔的话，<br>总藏在最不起眼的地方。</p>
+    </div>
+  </section>
+
+  <!-- ===== 音乐：胶片 ===== -->
+  <section class="panel music">
+    <div class="bg"></div>
+    <div class="scrim"></div>
+    <div class="music-inner reveal">
+      <svg class="divider" viewBox="0 0 180 24" aria-hidden="true">
+        <line x1="10" y1="12" x2="170" y2="12" stroke="rgba(242,236,220,.6)" stroke-width="1"/>
+        <circle cx="90" cy="12" r="3.5" fill="#e9d8a8"/>
+      </svg>
+      <h2 class="m-title">River Flows in You</h2>
+      <p class="m-sub">River Flows in You（你的心河）· 李闰珉</p>
+
+      <svg class="reel" id="reel" viewBox="0 0 200 200" role="button" aria-label="播放或暂停">
+        <circle class="disc" cx="100" cy="100" r="96"/>
+        <g class="teeth">
+          <rect x="96" y="3"   width="8" height="14"/>
+          <rect x="96" y="183" width="8" height="14"/>
+          <rect x="3"   y="96" width="14" height="8"/>
+          <rect x="183" y="96" width="14" height="8"/>
+          <rect x="28"  y="22" width="7" height="12" transform="rotate(45 31 28)"/>
+          <rect x="165" y="22" width="7" height="12" transform="rotate(-45 168 28)"/>
+          <rect x="28"  y="166" width="7" height="12" transform="rotate(-45 31 172)"/>
+          <rect x="165" y="166" width="7" height="12" transform="rotate(45 168 172)"/>
+        </g>
+        <circle class="label" cx="100" cy="100" r="44"/>
+        <text class="labeltxt" x="100" y="96" text-anchor="middle" font-size="17">River Flows</text>
+        <text class="labeltxt" x="100" y="114" text-anchor="middle" font-size="17">in You</text>
+        <circle class="hole" cx="100" cy="100" r="7"/>
+      </svg>
+
+      <p class="m-status"><b>●</b> 轻触唱片，让旋律开始</p>
+    </div>
+  </section>
+
+  <!-- ===== 页脚 ===== -->
+  <footer>
+    <p class="f-line">青汐 · 藏在相框里的歌</p>
+    <p class="f-easter">Je t'aime bien.</p>
+  </footer>
+
+  <audio id="bgm" loop src="music.mp3"></audio>
+
+  <script>
+    const audio = document.getElementById('bgm');
+    const toggleBtn = document.getElementById('toggleBtn');
+    const reel = document.getElementById('reel');
+    let playing = false;
+    function toggle(){
+      if(playing){ audio.pause(); }
+      else{ audio.play().catch(e=>console.log('播放失败', e)); }
+      playing = !playing;
+      document.body.classList.toggle('playing', playing);
+    }
+    toggleBtn.addEventListener('click', toggle);
+    reel.addEventListener('click', toggle);
+
+    // 滚动显现
+    const io = new IntersectionObserver((entries)=>{
+      entries.forEach(en=>{ if(en.isIntersecting) en.target.classList.add('in'); });
+    }, {threshold:.18});
+    document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+    // 视差：背景随滚动轻微移动
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const bgs = document.querySelectorAll('.panel .bg');
+    if(!reduceMotion){
+      function parallax(){
+        const vh = window.innerHeight;
+        bgs.forEach(b=>{
+          const r = b.parentElement.getBoundingClientRect();
+          const center = r.top + r.height/2;
+          const offset = (center - vh/2) * -0.12;
+          b.style.transform = 'translate3d(0,' + offset + 'px,0)';
+        });
+      }
+      let ticking=false;
+      window.addEventListener('scroll', ()=>{
+        if(!ticking){ requestAnimationFrame(()=>{parallax();ticking=false;}); ticking=true; }
+      }, {passive:true});
+      window.addEventListener('resize', parallax);
+      parallax();
+    }
+
+    // 蝴蝶：绕白色卡片循环飞行，四圈不同轨迹
+    const bf = document.querySelector('.flying-bf');
+    const bfImg = document.querySelector('.flying-bf img');
+    if(bf && !reduceMotion){
+      const CX=0, CY=90;
+      const LOOP_DUR=6000;
+      const t0 = performance.now()+1500;
+      // 四条差异明显的绕圈：[rx, ry, x偏移, y偏移, 抖动幅度]
+      const loops=[
+        [200, 70, 0, 110, 8],      // 扁椭圆，偏低
+        [120, 150, 60, 30, 16],    // 竖椭圆，偏右
+        [210, 130, -30, -10, 20],  // 大椭圆，偏左
+        [90, 90, -60, 90, 12]      // 小圆圈，偏左下
+      ];
+      function lerp(a,b,t){ return a+(b-a)*t; }
+      function smooth(t){ return t*t*(3-2*t); }
+      function loopPoint(theta){
+        // theta 连续增长，每 2π 一圈；圈与圈之间参数平滑过渡
+        const turns = theta/(Math.PI*2);
+        const k = Math.floor(turns);
+        const f = smooth(turns - k);
+        const A = loops[k % 4], B = loops[(k+1) % 4];
+        const rx = lerp(A[0],B[0],f), ry = lerp(A[1],B[1],f);
+        const ox = lerp(A[2],B[2],f), oy = lerp(A[3],B[3],f);
+        const jit = lerp(A[4],B[4],f);
+        const a = -theta;
+        const jx = Math.sin(theta*2.1)*jit, jy = Math.cos(theta*1.7)*jit*.7;
+        return {x:CX+ox+rx*Math.cos(a)+jx, y:CY+oy+ry*Math.sin(a)+jy};
+      }
+      let smoothAng=null, theta=0, lastFlapDur=0;
+      let prev=performance.now();
+      function frame(now){
+        const elapsed = now-t0;
+        if(elapsed<0){ requestAnimationFrame(frame); return; }
+        const dt = Math.min((now-prev)/1000, .05); prev=now;
+        // 基础角速度：6 秒一圈；第一圈慢一点（入场），之后正常
+        const enterK = Math.min(Math.max(elapsed-12000,0)/4000, 1);
+        const omega = (Math.PI*2)/6000 * (0.85 + 0.15*enterK);
+        theta += omega*dt*1000;
+        const p = loopPoint(theta);
+        const p2 = loopPoint(theta+0.02);
+        let dx=p2.x-p.x, dy=p2.y-p.y;
+        if(Math.abs(dx)<0.01&&Math.abs(dy)<0.01){dx=0;dy=-1;}
+        let ang=Math.atan2(dx,-dy)*180/Math.PI;
+        if(smoothAng===null){ smoothAng=ang; }
+        else {
+          let diff=ang-smoothAng;
+          while(diff>180) diff-=360;
+          while(diff<-180) diff+=360;
+          smoothAng+=diff*0.15;
+        }
+        // 翅膀频率随角速度
+        const flapDur = 1.1 - (omega/((Math.PI*2)/6000))*0.35;
+        if(bfImg && Math.abs(flapDur-lastFlapDur)>0.02){
+          bfImg.style.animationDuration = Math.max(0.6, flapDur).toFixed(2)+'s';
+          lastFlapDur=flapDur;
+        }
+        const enter = Math.min(elapsed/1500, 1);
+        bf.style.transform=`translate(${p.x}px,${p.y}px) rotate(${smoothAng}deg)`;
+        bf.style.opacity = enter*.92;
+        requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(frame);
+    }
+  </script>
+</body>
+</html>
