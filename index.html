@@ -10,6 +10,8 @@
 -->
 <link rel="preconnect" href="https://miaoda.feishu.cn">
 <link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Serif+SC:wght@400;600;700&family=Great+Vibes&family=Alex+Brush&display=swap">
+<script charset="UTF-8" id="LA_COLLECT" src="https://sdk.51.la/js-sdk-pro.min.js"></script>
+<script>LA.init({id:"3RSPkwD8LTpmMPwL",ck:"3RSPkwD8LTpmMPwL"})</script>
 <style>
   :root{
     --ink:#33443a;
@@ -98,6 +100,12 @@
   }
   .playbtn:hover{box-shadow:0 0 0 8px rgba(184,153,104,.12)}
   .playbtn:active{transform:scale(.94)}
+  .playbtn{animation:breathe 3.2s ease-in-out infinite}
+  body.playing .playbtn{animation:none;box-shadow:0 0 0 0 rgba(184,153,104,0)}
+  @keyframes breathe{
+    0%,100%{box-shadow:0 0 0 0 rgba(184,153,104,.0)}
+    50%{box-shadow:0 0 0 14px rgba(184,153,104,.18)}
+  }
   .playbtn svg{width:24px;height:24px;fill:var(--sage);display:block}
   .playbtn svg.pause{display:none}
   body.playing .playbtn svg.play{display:none}
